@@ -50,7 +50,7 @@ struct MenuBarView: View {
                     Text("\(String(format: "%.1f", viewModel.bonkCooldown))s between bonks")
                         .font(.caption2)
                         .foregroundColor(.secondary)
-                    Slider(value: $viewModel.bonkCooldown, in: 1...10, step: 0.5)
+                    Slider(value: $viewModel.bonkCooldown, in: 0.1...2, step: 0.1)
                 }
                 .padding(.vertical, 4)
 
@@ -97,11 +97,23 @@ struct MenuBarView: View {
 
             Divider()
 
-            Button("Quit (⌘Q)") {
-                NSApplication.shared.terminate(nil)
+            HStack {
+                Button("Restart") {
+                    let url = Bundle.main.bundleURL
+                    let task = Process()
+                    task.launchPath = "/usr/bin/open"
+                    task.arguments = [url.path]
+                    task.launch()
+                    NSApplication.shared.terminate(nil)
+                }
+                .font(.caption)
+                Spacer()
+                Button("Quit (⌘Q)") {
+                    NSApplication.shared.terminate(nil)
+                }
+                .font(.caption)
+                .keyboardShortcut("q")
             }
-            .font(.caption)
-            .keyboardShortcut("q")
         }
         .padding(8)
         .frame(width: 220)

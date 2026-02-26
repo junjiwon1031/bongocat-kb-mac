@@ -9,7 +9,7 @@ final class CatViewModel: ObservableObject {
     @Published var bonkPhase: BonkPhase? = nil
 
     // Settings
-    @AppStorage("bonkCooldown") var bonkCooldown: Double = 3.0
+    @AppStorage("bonkCooldown") var bonkCooldown: Double = 0.5
     @AppStorage("catSize") var catSize: CatSize = .medium
 
     private var idleTimer: Task<Void, Never>?

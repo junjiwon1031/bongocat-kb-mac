@@ -72,7 +72,7 @@ struct BongoCatView: View {
             }
 
             // Bonk overlays (layers 4-6) — positioned relative to sprite frame
-            if isBonked {
+            if let phase = bonkPhase {
                 GeometryReader { geo in
                     // Red X on cat's forehead
                     if showImpactEffects {
@@ -83,7 +83,7 @@ struct BongoCatView: View {
                     }
 
                     // Hammer above cat's head
-                    HammerView(phase: bonkPhase!)
+                    HammerView(phase: phase)
                         .position(x: geo.size.width * 0.60, y: geo.size.height * 0.05)
                         .zIndex(5)
 

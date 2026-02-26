@@ -19,12 +19,13 @@ final class AccessibilityManager: ObservableObject {
 
         if !trusted {
             pollTimer?.invalidate()
-            pollTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] timer in
-                Task { @MainActor in
+            pollTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
+                Task { @MainActor [weak self] in
                     let granted = AXIsProcessTrusted()
                     if granted {
                         self?.isGranted = true
-                        timer.invalidate()
+                        self?.pollTimer?.invalidate()
+                        self?.pollTimer = nil
                     }
                 }
             }

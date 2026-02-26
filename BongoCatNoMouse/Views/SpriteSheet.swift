@@ -21,13 +21,27 @@ final class SpriteSheet {
 
     let bonked: NSImage
 
+    private static var resourceBundle: Bundle {
+        #if SWIFT_PACKAGE
+        return Bundle.module
+        #else
+        return Bundle.main
+        #endif
+    }
+
     private init() {
         func load(_ name: String) -> NSImage {
-            guard let url = Bundle.module.url(forResource: name, withExtension: "png", subdirectory: "Resources"),
-                  let img = NSImage(contentsOf: url) else {
-                fatalError("Missing sprite: \(name).png")
+            // Try SwiftPM layout (Resources subdirectory) first, then Xcode layout (flat Resources folder)
+            let bundle = SpriteSheet.resourceBundle
+            if let url = bundle.url(forResource: name, withExtension: "png", subdirectory: "Resources"),
+               let img = NSImage(contentsOf: url) {
+                return img
             }
-            return img
+            if let url = bundle.url(forResource: name, withExtension: "png"),
+               let img = NSImage(contentsOf: url) {
+                return img
+            }
+            fatalError("Missing sprite: \(name).png")
         }
 
         bg    = load("bg")

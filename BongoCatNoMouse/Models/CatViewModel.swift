@@ -59,27 +59,27 @@ final class CatViewModel: ObservableObject {
         bonkTask = Task {
             // Phase 1: Hammer appearing
             bonkPhase = .hammerAppearing
-            try? await Task.sleep(for: .milliseconds(200))
+            try? await Task.sleep(for: .milliseconds(50))
             guard !Task.isCancelled else { return }
 
             // Phase 2: Hammer swinging
             bonkPhase = .hammerSwinging
-            try? await Task.sleep(for: .milliseconds(150))
+            try? await Task.sleep(for: .milliseconds(50))
             guard !Task.isCancelled else { return }
 
             // Phase 3: Impact
             bonkPhase = .impact
-            try? await Task.sleep(for: .milliseconds(300))
+            try? await Task.sleep(for: .milliseconds(100))
             guard !Task.isCancelled else { return }
 
             // Phase 4: Dizzy
             bonkPhase = .dizzy
-            try? await Task.sleep(for: .milliseconds(600))
+            try? await Task.sleep(for: .milliseconds(200))
             guard !Task.isCancelled else { return }
 
             // Phase 5: Recovering
             bonkPhase = .recovering
-            try? await Task.sleep(for: .milliseconds(200))
+            try? await Task.sleep(for: .milliseconds(100))
             guard !Task.isCancelled else { return }
 
             // End bonk sequence

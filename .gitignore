@@ -4,3 +4,9 @@
 xcuserdata/
 DerivedData/
 .DS_Store
+.claude/
+__pycache__/
+*.dmg
+*.mov
+*.skill
+test.png

@@ -1,0 +1,92 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app
+
+      - name: Build
+        run: |
+          xcodebuild -project BongoCatNoMouse.xcodeproj \
+            -scheme BongoCatNoMouse \
+            -configuration Release \
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Create zip
+        run: |
+          cd build/Build/Products/Release
+          zip -r BongoCatNoMouse.zip BongoCatNoMouse.app
+
+      - name: Get version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Compute SHA256
+        id: sha
+        run: |
+          SHA=$(shasum -a 256 build/Build/Products/Release/BongoCatNoMouse.zip | awk '{print $1}')
+          echo "SHA256=$SHA" >> $GITHUB_OUTPUT
+          echo "SHA256: $SHA"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/Build/Products/Release/BongoCatNoMouse.zip
+          generate_release_notes: true
+
+      - name: Update Homebrew Tap
+        env:
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        if: env.HOMEBREW_TAP_TOKEN != ''
+        run: |
+          VERSION=${{ steps.version.outputs.VERSION }}
+          SHA256=${{ steps.sha.outputs.SHA256 }}
+
+          git clone https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/junjiwon1031/homebrew-tap.git tap-repo
+          cd tap-repo
+
+          mkdir -p Casks
+
+          cat > Casks/bongocat-kb-mac.rb << CASK
+          cask "bongocat-kb-mac" do
+            version "${VERSION}"
+            sha256 "${SHA256}"
+
+            url "https://github.com/junjiwon1031/bongocat-kb-mac/releases/download/v#{version}/BongoCatNoMouse.zip"
+            name "BongoCatNoMouse"
+            desc "macOS menu bar Bongo Cat that reacts to your keyboard"
+            homepage "https://github.com/junjiwon1031/bongocat-kb-mac"
+
+            depends_on macos: ">= :sonoma"
+
+            app "BongoCatNoMouse.app"
+
+            zap trash: [
+              "~/Library/Preferences/com.bongocat.nomouse.plist",
+            ]
+          end
+          CASK
+
+          # Remove leading whitespace from heredoc
+          sed -i '' 's/^          //' Casks/bongocat-kb-mac.rb
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Casks/bongocat-kb-mac.rb
+          git commit -m "Update bongocat-kb-mac to v${VERSION}"
+          git push

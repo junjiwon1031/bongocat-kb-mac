@@ -16,6 +16,7 @@ final class SpriteSheet {
     let leftDown: [NSImage]      // 15 key positions (0-14)
 
     let rightUp: NSImage
+    let rightWithMouse: NSImage   // default right hand on mousepad
 
     let keyboardHighlight: [NSImage]  // 15 key highlights (0-14)
 
@@ -51,6 +52,7 @@ final class SpriteSheet {
         leftDown = (0..<15).map { load("lefthand_down\($0)") }
 
         rightUp = load("righthand_up")
+        rightWithMouse = load("righthand_with_mouse_4")
 
         keyboardHighlight = (0..<15).map { load("keyboard_\($0)") }
 

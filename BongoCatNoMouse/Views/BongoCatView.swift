@@ -45,8 +45,8 @@ struct BongoCatView: View {
             spriteLayer(isTyping ? s.leftDown[keyIdx] : s.leftUp)
                 .zIndex(3)
 
-            // Layer 5: Right hand (screen left) — trackpad hand, always resting
-            spriteLayer(s.rightUp)
+            // Layer 5: Right hand (screen left) — mousepad hand
+            spriteLayer(s.rightWithMouse)
                 .zIndex(3)
         }
         .aspectRatio(aspectRatio, contentMode: .fit)

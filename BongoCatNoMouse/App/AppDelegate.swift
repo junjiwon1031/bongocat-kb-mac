@@ -30,7 +30,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let panelRect = NSRect(origin: .zero, size: size)
         let overlayPanel = OverlayPanel(contentRect: panelRect)
 
-        let hostingView = NSHostingView(
+        let hostingView = ClickThroughHostingView(
             rootView: BongoCatView(viewModel: viewModel)
         )
         hostingView.layer?.backgroundColor = .clear

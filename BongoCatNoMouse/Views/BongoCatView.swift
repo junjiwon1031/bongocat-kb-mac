@@ -28,9 +28,13 @@ struct BongoCatView: View {
         return false
     }
 
-    private var bonkPhase: BonkPhase {
+    private var bonkPhase: BonkPhase? {
         if case .bonked(let phase) = viewModel.state { return phase }
-        return .hammerAppearing
+        return nil
+    }
+
+    private var showImpactEffects: Bool {
+        bonkPhase == .impact || bonkPhase == .dizzy
     }
 
     var body: some View {
@@ -67,32 +71,28 @@ struct BongoCatView: View {
                     .zIndex(3)
             }
 
-            // Layer 4: Red X overlay on head (when impact or dizzy)
-            if isBonked && (bonkPhase == .impact || bonkPhase == .dizzy) {
+            // Bonk overlays (layers 4-6) — positioned relative to sprite frame
+            if isBonked {
                 GeometryReader { geo in
-                    RedXOverlay()
-                        .frame(width: 40, height: 40)
-                        .position(x: geo.size.width * 0.65, y: geo.size.height * 0.15)
+                    // Red X on cat's forehead
+                    if showImpactEffects {
+                        RedXOverlay()
+                            .frame(width: 40, height: 40)
+                            .position(x: geo.size.width * 0.65, y: geo.size.height * 0.15)
+                            .zIndex(4)
+                    }
+
+                    // Hammer above cat's head
+                    HammerView(phase: bonkPhase!)
+                        .position(x: geo.size.width * 0.60, y: geo.size.height * 0.05)
+                        .zIndex(5)
+
+                    // Impact stars at hammer position
+                    ImpactEffectView(visible: showImpactEffects)
+                        .position(x: geo.size.width * 0.60, y: geo.size.height * 0.05)
+                        .zIndex(6)
                 }
                 .zIndex(4)
-            }
-
-            // Layer 5: Hammer (when bonked)
-            if isBonked {
-                GeometryReader { geo in
-                    HammerView(phase: bonkPhase)
-                        .position(x: geo.size.width * 0.60, y: geo.size.height * 0.05)
-                }
-                .zIndex(5)
-            }
-
-            // Layer 6: Impact effect stars (when bonked and in impact/dizzy)
-            if isBonked {
-                GeometryReader { geo in
-                    ImpactEffectView(visible: bonkPhase == .impact || bonkPhase == .dizzy)
-                        .position(x: geo.size.width * 0.60, y: geo.size.height * 0.05)
-                }
-                .zIndex(6)
             }
         }
         .aspectRatio(aspectRatio, contentMode: .fit)

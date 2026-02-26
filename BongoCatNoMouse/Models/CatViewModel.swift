@@ -6,12 +6,14 @@ import Combine
 @MainActor
 final class CatViewModel: ObservableObject {
     @Published var state: CatState = .idle
+    @Published var bonkPhase: BonkPhase? = nil
 
     // Settings
     @AppStorage("bonkCooldown") var bonkCooldown: Double = 3.0
     @AppStorage("catSize") var catSize: CatSize = .medium
 
     private var idleTimer: Task<Void, Never>?
+    private var bonkTask: Task<Void, Never>?
     private var pressCounter = 0
     private var lastKeyIdx = -1
 
@@ -22,8 +24,6 @@ final class CatViewModel: ObservableObject {
     // MARK: - Keyboard Input
 
     func handleKeyboard(keyCode: UInt16) {
-        if case .bonked = state { return }
-
         idleTimer?.cancel()
         pressCounter += 1
 
@@ -49,10 +49,42 @@ final class CatViewModel: ObservableObject {
         }
     }
 
-    // MARK: - Mouse Detected (TODO: bonk with custom sprites)
+    // MARK: - Mouse Detected
 
     func handleMouseDetected() {
-        // Disabled until custom hammer sprites are ready
+        // Guard: prevent re-triggering during bonk animation
+        guard bonkPhase == nil else { return }
+
+        // Run the bonk phase sequence
+        bonkTask = Task {
+            // Phase 1: Hammer appearing
+            bonkPhase = .hammerAppearing
+            try? await Task.sleep(for: .milliseconds(200))
+            guard !Task.isCancelled else { return }
+
+            // Phase 2: Hammer swinging
+            bonkPhase = .hammerSwinging
+            try? await Task.sleep(for: .milliseconds(150))
+            guard !Task.isCancelled else { return }
+
+            // Phase 3: Impact
+            bonkPhase = .impact
+            try? await Task.sleep(for: .milliseconds(300))
+            guard !Task.isCancelled else { return }
+
+            // Phase 4: Dizzy
+            bonkPhase = .dizzy
+            try? await Task.sleep(for: .milliseconds(600))
+            guard !Task.isCancelled else { return }
+
+            // Phase 5: Recovering
+            bonkPhase = .recovering
+            try? await Task.sleep(for: .milliseconds(200))
+            guard !Task.isCancelled else { return }
+
+            // End bonk sequence
+            bonkPhase = nil
+        }
     }
 }
 

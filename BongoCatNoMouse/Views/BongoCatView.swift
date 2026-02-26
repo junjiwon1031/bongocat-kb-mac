@@ -24,13 +24,11 @@ struct BongoCatView: View {
     }
 
     private var isBonked: Bool {
-        if case .bonked = viewModel.state { return true }
-        return false
+        viewModel.bonkPhase != nil
     }
 
     private var bonkPhase: BonkPhase? {
-        if case .bonked(let phase) = viewModel.state { return phase }
-        return nil
+        viewModel.bonkPhase
     }
 
     private var showImpactEffects: Bool {
@@ -45,31 +43,22 @@ struct BongoCatView: View {
             spriteLayer(s.bg)
                 .zIndex(0)
 
-            // Layer 1: Cat body (or bonked sprite if bonked)
-            if isBonked {
-                spriteLayer(s.bonked)
-                    .zIndex(1)
-            } else {
-                spriteLayer(s.catbg)
-                    .zIndex(1)
-            }
+            // Layer 1: Cat body (always normal cat — red X overlay handles bonk visual)
+            spriteLayer(s.catbg)
+                .zIndex(1)
 
-            // Layer 2: Keyboard highlight (only when typing, not when bonked)
-            if isTyping && !isBonked {
+            // Layer 2: Keyboard highlight (only when typing)
+            if isTyping {
                 spriteLayer(s.keyboardHighlight[keyIdx])
                     .zIndex(2)
             }
 
-            // Layer 3: Hands (only when not bonked)
-            if !isBonked {
-                // Left hand (screen right) — keyboard hand
-                spriteLayer(isTyping ? s.leftDown[keyIdx] : s.leftUp)
-                    .zIndex(3)
+            // Layer 3: Hands (always visible)
+            spriteLayer(isTyping ? s.leftDown[keyIdx] : s.leftUp)
+                .zIndex(3)
 
-                // Right hand (screen left) — mousepad hand
-                spriteLayer(s.rightWithMouse)
-                    .zIndex(3)
-            }
+            spriteLayer(s.rightWithMouse)
+                .zIndex(3)
 
             // Bonk overlays (layers 4-6) — positioned relative to sprite frame
             if let phase = bonkPhase {

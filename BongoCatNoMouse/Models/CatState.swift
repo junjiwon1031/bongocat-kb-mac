@@ -5,7 +5,6 @@ import Foundation
 enum CatState: Equatable {
     case idle
     case typing(pressId: Int, keyIdx: Int)   // unique id + sprite index (0-14)
-    case bonked(phase: BonkPhase)
 }
 
 enum BonkPhase: Equatable {

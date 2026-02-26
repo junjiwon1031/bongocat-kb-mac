@@ -17,6 +17,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         accessibilityManager.requestPermission()
         setupPanel()
         setupInputMonitor()
+        setupModifierMonitor()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -30,7 +31,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let panelRect = NSRect(origin: .zero, size: size)
         let overlayPanel = OverlayPanel(contentRect: panelRect)
 
-        let hostingView = ClickThroughHostingView(
+        let hostingView = NSHostingView(
             rootView: BongoCatView(viewModel: viewModel)
         )
         hostingView.layer?.backgroundColor = .clear
@@ -57,6 +58,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self?.viewModel.handleMouseDetected()
         }
         inputMonitor.start()
+    }
+
+    // MARK: - Modifier Monitor
+
+    private func setupModifierMonitor() {
+        NSEvent.addGlobalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
+            let optionPressed = event.modifierFlags.contains(.option)
+            self?.panel?.ignoresMouseEvents = !optionPressed
+        }
+        NSEvent.addLocalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
+            let optionPressed = event.modifierFlags.contains(.option)
+            self?.panel?.ignoresMouseEvents = !optionPressed
+            return event
+        }
     }
 
     // MARK: - Resize Panel

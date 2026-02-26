@@ -21,7 +21,7 @@ final class OverlayPanel: NSPanel {
         backgroundColor = .clear
         isMovableByWindowBackground = true
         hidesOnDeactivate = false
-        ignoresMouseEvents = false
+        ignoresMouseEvents = true
     }
 
     override var canBecomeKey: Bool { true }

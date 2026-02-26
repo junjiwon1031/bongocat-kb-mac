@@ -6,24 +6,35 @@ import SwiftUI
 final class ClickThroughHostingView<Content: View>: NSHostingView<Content> {
     override func hitTest(_ point: NSPoint) -> NSView? {
         guard bounds.contains(point) else { return nil }
+        guard let layer = self.layer else { return super.hitTest(point) }
 
-        guard let bitmapRep = bitmapImageRepForCachingDisplay(in: bounds) else {
-            return super.hitTest(point)
-        }
-        cacheDisplay(in: bounds, to: bitmapRep)
+        let scale = window?.backingScaleFactor ?? 1.0
+        let width = Int(bounds.width * scale)
+        let height = Int(bounds.height * scale)
+        let bytesPerPixel = 4
+        let bytesPerRow = width * bytesPerPixel
 
-        let flippedY = Int(bounds.height - point.y)
-        let x = Int(point.x)
+        var pixels = [UInt8](repeating: 0, count: bytesPerRow * height)
+        guard let context = CGContext(
+            data: &pixels,
+            width: width,
+            height: height,
+            bitsPerComponent: 8,
+            bytesPerRow: bytesPerRow,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else { return super.hitTest(point) }
 
-        guard let color = bitmapRep.colorAt(x: x, y: flippedY) else {
-            return nil
-        }
+        layer.render(in: context)
 
-        // Transparent pixel → pass click through
-        if color.alphaComponent < 0.1 {
-            return nil
-        }
+        let px = Int(point.x * scale)
+        let py = Int((bounds.height - point.y) * scale)
 
-        return super.hitTest(point)
+        guard px >= 0 && px < width && py >= 0 && py < height else { return nil }
+
+        let alphaOffset = (py * bytesPerRow) + (px * bytesPerPixel) + 3
+        let alpha = pixels[alphaOffset]
+
+        return alpha < 25 ? nil : super.hitTest(point)
     }
 }

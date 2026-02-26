@@ -14,5 +14,6 @@ struct BongoCatApp: App {
                 onResize: { [weak appDelegate] in appDelegate?.resizePanel() }
             )
         }
+        .menuBarExtraStyle(.window)
     }
 }

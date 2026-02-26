@@ -23,31 +23,77 @@ struct BongoCatView: View {
         return 0
     }
 
+    private var isBonked: Bool {
+        if case .bonked = viewModel.state { return true }
+        return false
+    }
+
+    private var bonkPhase: BonkPhase {
+        if case .bonked(let phase) = viewModel.state { return phase }
+        return .hammerAppearing
+    }
+
     var body: some View {
         let s = SpriteSheet.shared
 
         ZStack {
-            // Layer 1: Background (desk + keyboard + trackpad)
+            // Layer 0: Background (desk + keyboard + trackpad)
             spriteLayer(s.bg)
                 .zIndex(0)
 
-            // Layer 2: Cat body
-            spriteLayer(s.catbg)
-                .zIndex(1)
+            // Layer 1: Cat body (or bonked sprite if bonked)
+            if isBonked {
+                spriteLayer(s.bonked)
+                    .zIndex(1)
+            } else {
+                spriteLayer(s.catbg)
+                    .zIndex(1)
+            }
 
-            // Layer 3: Keyboard highlight (only when typing)
-            if isTyping {
+            // Layer 2: Keyboard highlight (only when typing, not when bonked)
+            if isTyping && !isBonked {
                 spriteLayer(s.keyboardHighlight[keyIdx])
                     .zIndex(2)
             }
 
-            // Layer 4: Left hand (screen right) — keyboard hand
-            spriteLayer(isTyping ? s.leftDown[keyIdx] : s.leftUp)
-                .zIndex(3)
+            // Layer 3: Hands (only when not bonked)
+            if !isBonked {
+                // Left hand (screen right) — keyboard hand
+                spriteLayer(isTyping ? s.leftDown[keyIdx] : s.leftUp)
+                    .zIndex(3)
 
-            // Layer 5: Right hand (screen left) — mousepad hand
-            spriteLayer(s.rightWithMouse)
-                .zIndex(3)
+                // Right hand (screen left) — mousepad hand
+                spriteLayer(s.rightWithMouse)
+                    .zIndex(3)
+            }
+
+            // Layer 4: Red X overlay on head (when impact or dizzy)
+            if isBonked && (bonkPhase == .impact || bonkPhase == .dizzy) {
+                GeometryReader { geo in
+                    RedXOverlay()
+                        .frame(width: 40, height: 40)
+                        .position(x: geo.size.width * 0.65, y: geo.size.height * 0.15)
+                }
+                .zIndex(4)
+            }
+
+            // Layer 5: Hammer (when bonked)
+            if isBonked {
+                GeometryReader { geo in
+                    HammerView(phase: bonkPhase)
+                        .position(x: geo.size.width * 0.60, y: geo.size.height * 0.05)
+                }
+                .zIndex(5)
+            }
+
+            // Layer 6: Impact effect stars (when bonked and in impact/dizzy)
+            if isBonked {
+                GeometryReader { geo in
+                    ImpactEffectView(visible: bonkPhase == .impact || bonkPhase == .dizzy)
+                        .position(x: geo.size.width * 0.60, y: geo.size.height * 0.05)
+                }
+                .zIndex(6)
+            }
         }
         .aspectRatio(aspectRatio, contentMode: .fit)
     }
@@ -57,5 +103,34 @@ struct BongoCatView: View {
             .resizable()
             .interpolation(.high)
             .aspectRatio(aspectRatio, contentMode: .fit)
+    }
+}
+
+// MARK: - Red X Overlay (shown on cat's head during impact/dizzy)
+
+private struct RedXOverlay: View {
+    var body: some View {
+        ZStack {
+            // First diagonal line (top-left to bottom-right)
+            Line()
+                .stroke(Color.red, lineWidth: 5)
+                .rotationEffect(.degrees(45))
+
+            // Second diagonal line (top-right to bottom-left)
+            Line()
+                .stroke(Color.red, lineWidth: 5)
+                .rotationEffect(.degrees(-45))
+        }
+    }
+}
+
+// MARK: - Line Shape (for X overlay)
+
+private struct Line: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.midX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.midX, y: rect.maxY))
+        return path
     }
 }

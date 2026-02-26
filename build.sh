@@ -24,8 +24,5 @@ mkdir -p "${INSTALL_DIR}"
 rm -rf "${INSTALL_DIR}/${APP_NAME}.app"
 cp -R "${APP_DIR}" "${INSTALL_DIR}/${APP_NAME}.app"
 
-echo "Resetting Accessibility permission..."
-tccutil reset Accessibility com.bongocat.nomouse
-
 echo "Done! App installed at: ${INSTALL_DIR}/${APP_NAME}.app"
 echo "Run: open \"${INSTALL_DIR}/${APP_NAME}.app\""

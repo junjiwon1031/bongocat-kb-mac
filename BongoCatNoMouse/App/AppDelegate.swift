@@ -6,6 +6,7 @@ import SwiftUI
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var panel: OverlayPanel?
+    private var dragOffset: NSPoint?
     private let viewModel = CatViewModel()
     private let inputMonitor = InputMonitor()
     private let accessibilityManager = AccessibilityManager()
@@ -66,10 +67,35 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSEvent.addGlobalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
             let optionPressed = event.modifierFlags.contains(.option)
             self?.panel?.ignoresMouseEvents = !optionPressed
+            if !optionPressed { self?.dragOffset = nil }
         }
         NSEvent.addLocalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
             let optionPressed = event.modifierFlags.contains(.option)
             self?.panel?.ignoresMouseEvents = !optionPressed
+            if !optionPressed { self?.dragOffset = nil }
+            return event
+        }
+        NSEvent.addLocalMonitorForEvents(matching: .leftMouseDown) { [weak self] event in
+            guard let self, let panel = self.panel else { return event }
+            let mouseScreen = NSEvent.mouseLocation
+            self.dragOffset = NSPoint(
+                x: mouseScreen.x - panel.frame.origin.x,
+                y: mouseScreen.y - panel.frame.origin.y
+            )
+            return event
+        }
+        NSEvent.addLocalMonitorForEvents(matching: .leftMouseDragged) { [weak self] event in
+            guard let self, let panel = self.panel, let offset = self.dragOffset else { return event }
+            let mouseScreen = NSEvent.mouseLocation
+            let newOrigin = NSPoint(
+                x: mouseScreen.x - offset.x,
+                y: mouseScreen.y - offset.y
+            )
+            panel.setFrameOrigin(newOrigin)
+            return event
+        }
+        NSEvent.addLocalMonitorForEvents(matching: .leftMouseUp) { [weak self] event in
+            self?.dragOffset = nil
             return event
         }
     }

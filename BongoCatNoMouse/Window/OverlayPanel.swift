@@ -19,7 +19,6 @@ final class OverlayPanel: NSPanel {
         isOpaque = false
         hasShadow = false
         backgroundColor = .clear
-        isMovableByWindowBackground = true
         hidesOnDeactivate = false
         ignoresMouseEvents = true
     }

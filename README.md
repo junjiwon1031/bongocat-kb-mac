@@ -13,9 +13,7 @@ A macOS menu bar app that displays an animated Bongo Cat overlay on your screen.
 - **Special key handling** — Space, Backspace, and Enter trigger wide-key animations
 - **Always-on-top overlay** — Transparent, borderless panel that stays visible on all Spaces
 - **Menu bar app** — Lives in the menu bar with no Dock icon
-- **Customizable settings**
-  - Bonk cooldown (1–10 seconds)
-  - Cat size (Small / Medium / Large)
+- **Customizable size** — Small / Medium / Large
 - **Accessibility-aware** — Requests macOS Accessibility permission for global key monitoring
 
 ## Requirements
@@ -25,37 +23,31 @@ A macOS menu bar app that displays an animated Bongo Cat overlay on your screen.
 
 ## Installation
 
+### Homebrew (Recommended)
+
+```bash
+brew tap junjiwon1031/tap https://github.com/junjiwon1031/homebrew-tap.git
+brew install bongocat-kb-mac
+bongocat-kb-mac
+```
+
 ### Build from Source
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/your-username/bongocat-nomouse.git
-   cd bongocat-nomouse
-   ```
+```bash
+git clone https://github.com/junjiwon1031/bongocat-kb-mac.git
+cd bongocat-kb-mac
+./build.sh
+open ~/Applications/BongoCatNoMouse.app
+```
 
-2. Open in Xcode:
-   ```bash
-   open BongoCatNoMouse.xcodeproj
-   ```
-
-3. Build and run (`Cmd + R`)
-
-4. Grant Accessibility permission when prompted (System Settings → Privacy & Security → Accessibility)
+Grant Accessibility permission when prompted (System Settings → Privacy & Security → Accessibility).
 
 ## Usage
 
-Once launched, a cat icon appears in the menu bar. The Bongo Cat overlay appears in the top-right corner of your screen.
+Once launched, a cat icon appears in the menu bar. The Bongo Cat overlay appears in the bottom-right corner of your screen.
 
 - **Type on your keyboard** — Watch the cat type along with you
-- **Click the menu bar icon** — Access settings
-- **Drag the overlay** — Reposition the cat anywhere on screen
-
-### Settings
-
-| Setting | Description | Range |
-|---------|-------------|-------|
-| Bonk Cooldown | Delay between bonk animations | 1–10 seconds |
-| Cat Size | Overlay size | Small / Medium / Large |
+- **Click the menu bar icon** — Access settings and quit
 
 ## Architecture
 
@@ -66,13 +58,8 @@ BongoCatNoMouse/
 ├── Views/                # SwiftUI views & sprite rendering
 ├── Input/                # Global event monitoring
 ├── Window/               # Transparent overlay panel
-└── Resources/            # 65 sprite PNG assets
+└── Resources/            # Sprite PNG assets
 ```
-
-- **MVVM** pattern with `CatViewModel` as the central state manager
-- **State machine** (`CatState`) with `.idle`, `.typing`, and `.bonked` states
-- **Sprite composition** — 5-layer ZStack (background → cat body → keyboard highlight → left hand → right hand)
-- **Global event tap** via `NSEvent.addGlobalMonitorForEvents` for keyboard capture
 
 ## Credits
 
